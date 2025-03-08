@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBP</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #2d2d2d;
+            --accent-1: #8a2be2;
+            --accent-2: #4b0082;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .search-box {
+            position: relative;
+            margin: 4rem 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            border: 3px solid var(--accent-1);
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            box-shadow: var(--shadow);
+        }
+
+        #searchButton {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.8rem 2rem;
+            background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .settings-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #000000;
+            border: none;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-option {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .theme-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Темы */
+        .dark-purple-theme {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --accent-1: #6a00ff;
+            --accent-2: #ad00ff;
+            --shadow: 0 0 15px rgba(106, 0, 255, 0.3);
+        }
+
+        .rgb-theme {
+            --text-color: #ffffff;
+            --shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .search-results {
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="container">
+        <h1 class="title">🔍 FBP Search</h1>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Поиск...">
+            <button id="searchButton" onclick="performSearch()">Найти</button>
+        </div>
+
+        <div class="search-results" id="results"></div>
+    </div>
+
+    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+
+    <div class="modal" id="settingsModal">
+        <h2>Настройки</h2>
+        <div class="theme-section">
+            <h3>Тема:</h3>
+            <div class="theme-option light-theme" onclick="changeTheme('light')">🌞 Светлая</div>
+            <div class="theme-option dark-purple-theme" onclick="changeTheme('dark-purple')">🌚 Тёмно-фиолетовая</div>
+            <div class="theme-option rgb-theme" onclick="changeTheme('rgb')">🌈 RGB Волны</div>
+        </div>
+        <div class="language-section" style="margin-top: 1.5rem;">
+            <h3>Язык:</h3>
+            <button class="lang-btn" onclick="toggleLanguage()">🇷🇺 → 🇺🇸</button>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyAlQGmpHMsiNwyBNVy8GneJUIrZRejD4go';
+        const CX = '9298cb8cddaa64ff7';
+        let currentLang = 'ru';
+        
+        const translations = {
+            ru: {
+                searchPlaceholder: "Поиск...",
+                searchButton: "Найти",
+                settings: "Настройки",
+                themes: "Темы",
+                language: "Язык",
+                lightTheme: "🌞 Светлая",
+                darkTheme: "🌚 Тёмно-фиолетовая",
+                rgbTheme: "🌈 RGB Волны"
+            },
+            en: {
+                searchPlaceholder: "Search...",
+                searchButton: "Search",
+                settings: "Settings",
+                themes: "Themes",
+                language: "Language",
+                lightTheme: "🌞 Light",
+                darkTheme: "🌚 Dark Purple",
+                rgbTheme: "🌈 RGB Waves"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            applyTranslations();
+            localStorage.setItem('language', currentLang);
+        }
+
+        function applyTranslations() {
+            // Обновление всех элементов интерфейса
+            document.getElementById('searchInput').placeholder = translations[currentLang].searchPlaceholder;
+            document.getElementById('searchButton').innerText = translations[currentLang].searchButton;
+            document.querySelector('#settingsModal h2').innerText = translations[currentLang].settings;
+            document.querySelectorAll('.theme-option')[0].innerText = translations[currentLang].lightTheme;
+            document.querySelectorAll('.theme-option')[1].innerText = translations[currentLang].darkTheme;
+            document.querySelectorAll('.theme-option')[2].innerText = translations[currentLang].rgbTheme;
+            document.querySelector('.language-section h3').innerText = translations[currentLang].language;
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function changeTheme(theme) {
+            document.body.className = `${theme}-theme`;
+            localStorage.setItem('theme', theme);
+            
+            // Обновление теней для темной темы
+            if(theme === 'dark-purple') {
+                document.querySelector('.settings-btn').style.boxShadow = '0 0 15px rgba(106, 0, 255, 0.5)';
+            } else {
+                document.querySelector('.settings-btn').style.boxShadow = '0 0 15px rgba(0,0,0,0.3)';
+            }
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            if (!query) return;
+
+            const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayResults(data.items);
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        function displayResults(items) {
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = '';
+            
+            items.forEach(item => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.innerHTML = `
+                    <h3><a href="${item.link}" style="color: var(--accent-1);">${item.title}</a></h3>
+                    <p>${item.snippet}</p>
+                `;
+                resultsContainer.appendChild(resultItem);
+            });
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const savedLang = localStorage.getItem('language') || 'ru';
+            changeTheme(savedTheme);
+            currentLang = savedLang;
+            applyTranslations();
+        });
+    </script>
+</body>
+</html>
